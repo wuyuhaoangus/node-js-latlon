@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+
+    <h1>
+        Hello World!
+    </h1>
+    <p>
+        latitude: <span id="latitude"></span>&deg;<br>
+        longitude: <span id="longitude"></span>&deg;
+    </p>
+
+    <label for="fname">First name:</label><br>
+    <input type="text" id="fname" name="fname" value="John">
+    <button id="submit-btn">submit</button><br><br>
+    <button id="retrieve-btn">retrieve data</button><br>
+
+    <script>
+        let lat,lon;
+        const button = document.getElementById('submit-btn');
+        const rbutton = document.getElementById('retrieve-btn');
+        const fname = document.getElementById('fname');
+        
+        button.addEventListener('click', async function() {
+            const value = fname.value;
+            const data = {lat,lon,value};
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            };
+            //fetch starts a request and returns a promise
+            const response = await fetch('/api',options); //or we can use then to wait for the response from our server
+            const json = await response.json();
+            console.log(json);
+        });
+
+        rbutton.addEventListener('click', async function(){
+            //fetch a get response to retrieve data from the server
+            const get_response = await fetch('/api');
+            const json_response = await get_response.json();
+            console.log(json_response)
+            
+            for (item of json_response){
+                const root = document.createElement('div');
+                const name = document.createElement('div');
+                const date = document.createElement('div');
+                const geo = document.createElement('div');
+                
+                name.textContent = item.value;
+                date.textContent = new Date(item.timestamp).toLocaleDateString();
+                geo.textContent = `${item.lat},${item.lon}`;
+                root.append(name,date,geo)
+                document.body.append(root);
+            }
+
+        })
+
+        if('geolocation' in navigator) {
+            console.log('geolocation available');
+            navigator.geolocation.getCurrentPosition(async position => {
+            lat = position.coords.latitude;
+            lon = position.coords.longitude;
+            document.getElementById('latitude').textContent = lat;
+            document.getElementById('longitude').textContent = lon;
+        });
+        } else {
+            console.log('geolocation not available');
+        }
+        
+    </script>
+    
+</body>
+</html>
